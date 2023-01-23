@@ -1,5 +1,7 @@
 default_platform(:ios)
 
+# ------------------------ Constants ------------------------ 
+
 app_identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
 
 app_store_connect_api_key_id = "#{ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"]}"
@@ -8,6 +10,7 @@ app_store_connect_api_p8_contents = File.read("#{ENV["APP_STORE_CONNECT_API_KEY_
 
 platform :ios do
 
+  # ------------------------ Certificates and Provisioning profiles ------------------------ 
   desc "match certificates"
   lane :match_certificates do
     match(type: "development", 
@@ -18,7 +21,8 @@ platform :ios do
     )
   end
 
-  #Tests
+  # ------------------------ Running tests ------------------------ 
+
   desc "Run all the tests"
   lane :run_unit_tests do
     scan(
@@ -28,6 +32,8 @@ platform :ios do
       )
     end
 
+    # ------------------------ Build and packaging ------------------------ 
+
     desc "Build the app"
     lane :gym_app do
       match_certificates
@@ -36,7 +42,8 @@ platform :ios do
       git_commit(path: "*", message: "Bump build to #{get_build_number}")
     end
 
-    #TestFlight upload
+    # ------------------------ TestFlight upload ------------------------ 
+
     desc "Upload to TestFlight"
     lane :pilot_to_testflight do
       api_key = app_store_connect_api_key(
@@ -48,11 +55,12 @@ platform :ios do
       pilot(api_key: api_key)
     end
 
+    # ------------------------ Beta Upload ------------------------ 
+
     desc "Upload beta to TestFlight"
     lane :beta_upload do 
       run_unit_tests
       gym_app
       pilot_to_testflight
     end
-
 end
